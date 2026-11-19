@@ -764,6 +764,24 @@ table {
   margin: 12px 0;
 }
 
+.table-responsive,
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 12px 0;
+}
+
+@media (max-width: 768px) {
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+}
+
 th, td {
   padding: 10px 14px;
   border-bottom: 1px solid var(--border-subtle);
@@ -840,11 +858,30 @@ img.fig:hover {
 }
 
 @media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+    margin: 18px auto;
+  }
+  .card {
+    padding: 20px 14px;
+    border-radius: var(--radius-md);
+  }
+  .brand {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .model-badge {
+    font-size: 0.68rem;
+    padding: 3px 8px;
+  }
   .welcome {
-    padding: 22px 18px;
+    padding: 22px 16px;
+    border-radius: var(--radius-lg);
   }
   .welcome-stats {
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
   .welcome-stats strong {
     font-size: 1.15rem;
@@ -853,9 +890,21 @@ img.fig:hover {
     font-size: 0.62rem;
   }
   .welcome-actions {
-    align-items: flex-start;
+    align-items: stretch;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
+  }
+  .welcome-actions .btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+  .kpis {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .economics-grid {
+    grid-template-columns: 1fr;
   }
 }
 

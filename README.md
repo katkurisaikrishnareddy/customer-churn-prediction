@@ -1,4 +1,5 @@
 # Customer Churn Prediction — end-to-end ML system
+# Live URL: https://customer-churn-prediction-njc7.onrender.com/metrics
 
 Predict which telecom customers are about to leave, **decide who to contact using retention economics**, and serve the result through a web app, a JSON API and batch scoring.
 

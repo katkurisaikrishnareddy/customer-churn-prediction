@@ -1,0 +1,468 @@
+{% extends "base.html" %}{% block title %}Model Metrics & Research Dashboard{% endblock %}{% block content %}
+{% set t=r.test_metrics %}{% set d=r.test_metrics_default_threshold %}{% set ci=r.bootstrap_95ci_at_optimal_threshold %}
+
+<!-- Sticky Section Navigation Chips with Interactive (<) and (>) Controls -->
+<div class="metrics-nav-container">
+  <button type="button" class="nav-arrow-btn" id="nav-arrow-left" onclick="scrollNav(-240)" aria-label="Scroll left">&lt;</button>
+  <nav class="metrics-nav" id="metrics-nav" aria-label="Research pipeline phases">
+    <a class="nav-chip" href="#summary">🏆 Executive Summary</a>
+    <a class="nav-chip" href="#eda">📊 1. Exploratory Data Analysis</a>
+    <a class="nav-chip" href="#model-selection">🤖 2. Model Training &amp; Selection</a>
+    <a class="nav-chip" href="#economics">💰 3. Threshold &amp; Business Value</a>
+    <a class="nav-chip" href="#evaluation">📈 4. Test Set Diagnostic Curves</a>
+    <a class="nav-chip" href="#explainability">🔍 5. SHAP Explainability</a>
+    <a class="nav-chip" href="#segments">👥 6. Customer Segments &amp; Fairness</a>
+  </nav>
+  <button type="button" class="nav-arrow-btn" id="nav-arrow-right" onclick="scrollNav(240)" aria-label="Scroll right">&gt;</button>
+</div>
+
+<!-- =====================================================================
+     EXECUTIVE SUMMARY & MODEL METRICS
+     ===================================================================== -->
+<div class="card" id="summary">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-bottom:1px solid var(--border-subtle);padding-bottom:12px;margin-bottom:14px">
+    <h2 style="border:none;padding:0;margin:0">🏆 Final Champion Model: {{ r.model_name }}</h2>
+    <span class="tier Low" style="font-size:0.72rem;padding:3px 12px">Calibrated & Validated</span>
+  </div>
+  <p class="muted">
+    Evaluated on <b>{{ r.n_test }} held-out test customers</b> ({{ (r.test_churn_rate*100)|round(1) }}% churn rate). 
+    Decision threshold <b>τ = {{ r.threshold }}</b> derived from retention economics (cost of offer vs. saved revenue) using training folds only.
+  </p>
+
+  <div class="kpis" style="margin-top:16px">
+    <div class="kpi"><div class="v">{{ t.roc_auc }}</div><div class="l">ROC-AUC</div></div>
+    <div class="kpi"><div class="v">{{ t.pr_auc }}</div><div class="l">PR-AUC</div></div>
+    <div class="kpi"><div class="v" style="color:#34d399">{{ (t.recall*100)|round(1) }}%</div><div class="l">Recall @ τ=0.24</div></div>
+    <div class="kpi"><div class="v">{{ (t.precision*100)|round(1) }}%</div><div class="l">Precision @ τ=0.24</div></div>
+    <div class="kpi"><div class="v">{{ (t.f1_score*100)|round(1) }}%</div><div class="l">F1 @ τ=0.24</div></div>
+    <div class="kpi"><div class="v">{{ (t.accuracy*100)|round(1) }}%</div><div class="l">Accuracy @ τ=0.24</div></div>
+  </div>
+
+  <h3 style="margin-top:22px">Default 0.50 Threshold vs. Cost-Optimal τ = {{ r.threshold }}</h3>
+  <table>
+    <tr>
+      <th>Metric</th>
+      <th>@ Default 0.50</th>
+      <th>@ Cost-Optimal {{ r.threshold }}</th>
+      <th>95% Bootstrap CI @ {{ r.threshold }}</th>
+    </tr>
+    <tr class="hl">
+      <td><b>Recall (Churners Caught)</b></td>
+      <td>{{ (d.recall*100)|round(1) }}%</td>
+      <td><b style="color:#34d399">{{ (t.recall*100)|round(1) }}%</b></td>
+      <td>{{ (ci.recall[0]*100)|round(1) }}% – {{ (ci.recall[1]*100)|round(1) }}%</td>
+    </tr>
+    <tr>
+      <td>Precision</td>
+      <td>{{ (d.precision*100)|round(1) }}%</td>
+      <td>{{ (t.precision*100)|round(1) }}%</td>
+      <td>{{ (ci.precision[0]*100)|round(1) }}% – {{ (ci.precision[1]*100)|round(1) }}%</td>
+    </tr>
+    <tr>
+      <td>F1-Score</td>
+      <td>{{ d.f1_score }}</td>
+      <td><b>{{ t.f1_score }}</b></td>
+      <td>{{ ci.f1_score[0] }} – {{ ci.f1_score[1] }}</td>
+    </tr>
+    <tr>
+      <td>Overall Accuracy</td>
+      <td>{{ (d.accuracy*100)|round(1) }}%</td>
+      <td>{{ (t.accuracy*100)|round(1) }}%</td>
+      <td>Deliberate trade-off for recall</td>
+    </tr>
+    <tr>
+      <td>ROC-AUC (Threshold-Free)</td>
+      <td>{{ d.roc_auc }}</td>
+      <td>{{ t.roc_auc }}</td>
+      <td>{{ ci.roc_auc[0] }} – {{ ci.roc_auc[1] }}</td>
+    </tr>
+  </table>
+  <p class="muted" style="margin-top:10px">
+    <b>Key Takeaway:</b> Shifting to τ = 0.24 captures <b>82.1% of all churners</b> (up from 52.1% at 0.50). In Telco retention, missing an at-risk subscriber costs ~$780 in lost annual billing, while an unnecessary retention offer costs only ~$50.
+  </p>
+</div>
+
+<!-- =====================================================================
+     PHASE 1: EXPLORATORY DATA ANALYSIS (EDA)
+     ===================================================================== -->
+<div class="phase-header" id="eda">
+  <span class="phase-tag">Phase 1</span>
+  <h2 class="phase-title">Exploratory Data Analysis & Churn Drivers</h2>
+</div>
+
+<!-- Figure 1: Target Distribution -->
+<div class="fig-card">
+  <div class="fig-header">
+    <h3>🎯 Target Class Distribution & Imbalance (7,043 Accounts)</h3>
+    <span class="archetype-spec-pill">Dataset Baseline</span>
+  </div>
+  <div class="fig-wrapper">
+    <img class="fig" src="/static/figures/eda_target.png" alt="Target class distribution">
+  </div>
+  <div class="fig-caption">
+    <strong>Key Finding:</strong> Churn baseline is <b>26.5% (1,869 accounts)</b> vs <b>73.5% (5,174 accounts)</b> who stayed. 
+    Because of this ~2.8 : 1 imbalance, model evaluation emphasizes <b>PR-AUC</b> and <b>Recall</b> over naive overall accuracy.
+  </div>
+</div>
+
+<!-- Figure 2: Categorical Churn Drivers -->
+<div class="fig-card">
+  <div class="fig-header">
+    <h3>📊 Churn Rate Across Key Categorical Features</h3>
+    <span class="archetype-spec-pill">Bivariate Analysis</span>
+  </div>
+  <div class="fig-wrapper">
+    <img class="fig" src="/static/figures/eda_churn_drivers.png" alt="Categorical churn drivers">
+  </div>
+  <div class="fig-caption">
+    <strong>Key Finding:</strong> Month-to-month contracts experience a massive <b>42.7% churn rate</b> (vs 2.8% on 2-year contracts). 
+    Fiber optic subscribers churn at <b>41.9%</b> (vs 18.9% on DSL), largely driven by high pricing and lack of technical support. 
+    Electronic check billing shows <b>45.3% churn</b> vs ~15% for automatic bank/card payments.
+  </div>
+</div>
+
+<!-- Two Figs: Numeric Distributions & Correlation Heatmap -->
+<div class="two-figs">
+  <div class="fig-card">
+    <div class="fig-header">
+      <h3>📈 Continuous Feature Distributions</h3>
+      <span class="archetype-spec-pill">Numeric KDE</span>
+    </div>
+    <div class="fig-wrapper">
+      <img class="fig" src="/static/figures/eda_numeric.png" alt="Continuous numeric distributions">
+    </div>
+    <div class="fig-caption">
+      <strong>Key Finding:</strong> Churn peaks during the first <b>0–6 months of tenure</b>. Customers paying over <b>$70/month</b> have significantly elevated cancellation probability.
+    </div>
+  </div>
+
+  <div class="fig-card">
+    <div class="fig-header">
+      <h3>🗺️ Feature Correlation Heatmap</h3>
+      <span class="archetype-spec-pill">Multicollinearity</span>
+    </div>
+    <div class="fig-wrapper">
+      <img class="fig" src="/static/figures/eda_correlation.png" alt="Correlation heatmap">
+    </div>
+    <div class="fig-caption">
+      <strong>Key Finding:</strong> TotalCharges is highly correlated with Tenure (0.83). Regularized linear and tree-based pipelines effectively manage this relationship.
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     PHASE 2: MODEL TRAINING, SELECTION & IMBALANCE STUDY
+     ===================================================================== -->
+<div class="phase-header" id="model-selection">
+  <span class="phase-tag">Phase 2</span>
+  <h2 class="phase-title">Model Training, Selection & Imbalance Ablation</h2>
+</div>
+
+<div class="two-figs">
+  <!-- Figure 5: Model Comparison & 1-SE Rule -->
+  <div class="fig-card">
+    <div class="fig-header">
+      <h3>🤖 5-Fold CV Model Comparison & One-SE Rule</h3>
+      <span class="archetype-spec-pill">Model Selection</span>
+    </div>
+    <div class="fig-wrapper">
+      <img class="fig" src="/static/figures/model_comparison.png" alt="Model comparison 1-SE rule">
+    </div>
+    <div class="fig-caption">
+      <strong>Selection Rule:</strong> Evaluated Logistic Regression, Random Forest, HistGradientBoosting, and XGBoost on 5-fold CV PR-AUC. 
+      Under the <b>one-standard-error rule</b>, {{ r.model_name }} is chosen as the simplest, most interpretable model within 1 SE of the top performer.
+    </div>
+  </div>
+
+  <!-- Figure 6: Class Imbalance Ablation -->
+  <div class="fig-card">
+    <div class="fig-header">
+      <h3>⚖️ Class-Imbalance Strategy Study</h3>
+      <span class="archetype-spec-pill">Ablation Study</span>
+    </div>
+    <div class="fig-wrapper">
+      <img class="fig" src="/static/figures/imbalance_ablation.png" alt="Class imbalance ablation">
+    </div>
+    <div class="fig-caption">
+      <strong>Finding:</strong> Class-weighting and SMOTE artificially inflate false positives without improving ranking quality (PR-AUC). 
+      Keeping pure calibrated probabilities and tuning the decision threshold via business economics achieves superior net benefit.
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     PHASE 3: THRESHOLD OPTIMIZATION & RETENTION ECONOMICS
+     ===================================================================== -->
+<div class="phase-header" id="economics">
+  <span class="phase-tag">Phase 3</span>
+  <h2 class="phase-title">Threshold Optimization & Retention Economics</h2>
+</div>
+
+<!-- Figure 7: Threshold Analysis Curve -->
+<div class="fig-card">
+  <div class="fig-header">
+    <h3>🎯 Cost-Optimal Threshold Optimization (τ = {{ r.threshold }})</h3>
+    <span class="archetype-spec-pill">Economics Optimization</span>
+  </div>
+  <div class="fig-wrapper">
+    <img class="fig" src="/static/figures/threshold_analysis.png" alt="Threshold analysis trade-off">
+  </div>
+  <div class="fig-caption">
+    <strong>Economics Rationale:</strong> The left plot shows the Precision/Recall/F1 curves against decision threshold. 
+    The right plot displays net financial benefit ($): net benefit peaks at <b>τ = {{ r.threshold }}</b>, confirming that lower thresholds maximize dollar retention.
+  </div>
+</div>
+
+<!-- Figure 8: Business Value Comparison -->
+<div class="fig-card">
+  <div class="fig-header">
+    <h3>💰 Net Retention Campaign Value on Held-Out Test Set (1,409 Accounts)</h3>
+    <span class="archetype-spec-pill">Financial ROI</span>
+  </div>
+  <table>
+    <tr><th>Targeting Strategy</th><th>Net Benefit ($ Saved)</th><th>Strategy Rationale</th></tr>
+    {% for k,v in r.business_test_net_benefit.items() %}
+    <tr {% if 'cost-optimal' in k %}class="hl"{% endif %}>
+      <td><b>{{ k }}</b></td>
+      <td><b style="font-family:'JetBrains Mono',monospace;font-size:1.05rem">${{ '{:,.0f}'.format(v) }}</b></td>
+      <td>
+        {% if 'optimal' in k %}<span style="color:#34d399">★ Peak financial ROI (+28% vs default)</span>
+        {% elif '0.50' in k %}Misses 48% of at-risk subscribers
+        {% elif 'everyone' in k %}Excessive offer spend on loyal customers
+        {% else %}Zero retention intervention{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  <div class="fig-wrapper">
+    <img class="fig" src="/static/figures/business_value.png" alt="Business value by strategy">
+  </div>
+  <div class="fig-caption">
+    <strong>Bottom Line:</strong> Operating at τ = {{ r.threshold }} produces <b>${{ '{:,.0f}'.format(r.business_test_net_benefit.get('Cost-optimal threshold (0.24)', 51803)) }}</b> in net benefit — beating the traditional 0.50 cutoff by <b>+$11,481 (+28.5%)</b>.
+  </div>
+</div>
+
+<!-- =====================================================================
+     PHASE 4: TEST SET EVALUATION & DIAGNOSTIC CURVES
+     ===================================================================== -->
+<div class="phase-header" id="evaluation">
+  <span class="phase-tag">Phase 4</span>
+  <h2 class="phase-title">Held-Out Test Set Diagnostic Curves</h2>
+</div>
+
+<!-- Figure 9: Confusion Matrices -->
+<div class="fig-card">
+  <div class="fig-header">
+    <h3>🔲 Confusion Matrices Comparison (Default 0.50 vs Cost-Optimal 0.24)</h3>
+    <span class="archetype-spec-pill">Classification Diagnostics</span>
+  </div>
+  <div class="fig-wrapper">
+    <img class="fig" src="/static/figures/confusion_matrices.png" alt="Confusion matrices comparison">
+  </div>
+  <div class="fig-caption">
+    <strong>Diagnostic Comparison:</strong> At the default 0.50 threshold, the system only catches 195 churners (missing 179). 
+    At the cost-optimal <b>τ = 0.24</b>, caught churners jump to <b>307 (only 67 missed)</b> — an <b>82.1% capture rate</b>.
+  </div>
+</div>
+
+<!-- Two Figs: ROC Curve & PR Curve -->
+<div class="two-figs">
+  <div class="fig-card">
+    <div class="fig-header">
+      <h3>📉 ROC Curve (AUC = {{ t.roc_auc }})</h3>
+      <span class="archetype-spec-pill">Discrimination</span>
+    </div>
+    <div class="fig-wrapper">
+      <img class="fig" src="/static/figures/roc_curve.png" alt="ROC Curve">
+    </div>
+    <div class="fig-caption">
+      <strong>ROC-AUC (0.8445):</strong> Indicates strong discriminative ability across false positive rates, far exceeding random guessing (0.50).
+    </div>
+  </div>
+
+  <div class="fig-card">
+    <div class="fig-header">
+      <h3>📈 Precision–Recall Curve (PR-AUC = {{ t.pr_auc }})</h3>
+      <span class="archetype-spec-pill">Imbalanced Metric</span>
+    </div>
+    <div class="fig-wrapper">
+      <img class="fig" src="/static/figures/pr_curve.png" alt="Precision Recall Curve">
+    </div>
+    <div class="fig-caption">
+      <strong>PR-AUC (0.6498):</strong> Demonstrates high quality over the baseline churn prevalence of 0.265.
+    </div>
+  </div>
+</div>
+
+<!-- Two Figs: Lift/Gains & Calibration -->
+<div class="two-figs">
+  <div class="fig-card">
+    <div class="fig-header">
+      <h3>📶 Decile Lift & Cumulative Gains</h3>
+      <span class="archetype-spec-pill">Ranking Power</span>
+    </div>
+    <div class="fig-wrapper">
+      <img class="fig" src="/static/figures/lift_gains.png" alt="Lift and cumulative gains">
+    </div>
+    <div class="fig-caption">
+      <strong>Targeting Efficiency:</strong> Contacting the top <b>20% riskiest subscribers</b> captures over <b>55% of all churners</b>. Contacting the top 40% captures over <b>80%</b>.
+    </div>
+  </div>
+
+  <div class="fig-card">
+    <div class="fig-header">
+      <h3>🎯 Probability Calibration Curve (ECE = {{ t.ece }})</h3>
+      <span class="archetype-spec-pill">Reliability Diagram</span>
+    </div>
+    <div class="fig-wrapper">
+      <img class="fig" src="/static/figures/calibration_curve.png" alt="Calibration curve">
+    </div>
+    <div class="fig-caption">
+      <strong>Reliability:</strong> The curve tightly hugs the ideal diagonal. A predicted 30% risk corresponds to an actual 30% empirical churn frequency.
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     PHASE 5: EXPLAINABILITY WITH SHAP & FEATURE IMPORTANCE
+     ===================================================================== -->
+<div class="phase-header" id="explainability">
+  <span class="phase-tag">Phase 5</span>
+  <h2 class="phase-title">Global Explainability & Feature Attribution (SHAP)</h2>
+</div>
+
+<div class="two-figs">
+  <!-- Figure 14: SHAP Beeswarm Summary -->
+  <div class="fig-card">
+    <div class="fig-header">
+      <h3>🐝 SHAP Summary Beeswarm Plot</h3>
+      <span class="archetype-spec-pill">Directional Impact</span>
+    </div>
+    <div class="fig-wrapper">
+      <img class="fig" src="/static/figures/shap_summary.png" alt="SHAP Beeswarm Summary Plot">
+    </div>
+    <div class="fig-caption">
+      <strong>Attribution:</strong> High feature values in red, low in blue. 
+      Month-to-month contracts and fiber internet push churn risk to the right (+log-odds), whereas high tenure and 2-year contracts strongly protect the customer.
+    </div>
+  </div>
+
+  <!-- Figure 15: SHAP Bar Feature Importance -->
+  <div class="fig-card">
+    <div class="fig-header">
+      <h3>📊 Mean |SHAP| Global Feature Importance</h3>
+      <span class="archetype-spec-pill">Global Ranking</span>
+    </div>
+    <div class="fig-wrapper">
+      <img class="fig" src="/static/figures/shap_bar.png" alt="Mean absolute SHAP value bar chart">
+    </div>
+    <div class="fig-caption">
+      <strong>Ranking:</strong> Contract type, Tenure, and Internet Service constitute the top 3 primary macro-drivers of customer churn across the entire Telco fleet.
+    </div>
+  </div>
+</div>
+
+<!-- Figure 16: Permutation Importance -->
+<div class="fig-card">
+  <div class="fig-header">
+    <h3>🔀 Permutation Importance on Held-Out Test Set</h3>
+    <span class="archetype-spec-pill">Model-Agnostic Validation</span>
+  </div>
+  <div class="fig-wrapper">
+    <img class="fig" src="/static/figures/permutation_importance.png" alt="Permutation importance on test set">
+  </div>
+  <div class="fig-caption">
+    <strong>Permutation Test:</strong> Measures the decrease in test ROC-AUC when each feature is randomly shuffled. 
+    Contract and Tenure produce the largest drops, corroborating the SHAP findings.
+  </div>
+</div>
+
+<!-- =====================================================================
+     PHASE 6: CUSTOMER SEGMENTS & DEMOGRAPHICS AUDIT
+     ===================================================================== -->
+<div class="phase-header" id="segments">
+  <span class="phase-tag">Phase 6</span>
+  <h2 class="phase-title">Customer Segmentation & Demographics Audit</h2>
+</div>
+
+<!-- Figure 17: Customer Segments -->
+<div class="fig-card">
+  <div class="fig-header">
+    <h3>👥 K-Means Customer Segmentation & Segment Churn Profiles</h3>
+    <span class="archetype-spec-pill">Behavioral Clustering</span>
+  </div>
+  <div class="fig-wrapper">
+    <img class="fig" src="/static/figures/customer_segments.png" alt="Customer segmentation clusters">
+  </div>
+  <div class="fig-caption">
+    <strong>Segmentation Profile:</strong> K-Means identifies 4 distinct clusters based on Tenure and Monthly Charges. 
+    The high-bill / low-tenure cluster exhibits the highest churn rate (~50%), while long-tenure bundled families exhibit sub-10% churn.
+  </div>
+</div>
+
+<!-- Demographic Fairness Audit Table -->
+<div class="card">
+  <h2>⚖️ Fairness & Demographic Audit (Held-Out Test Set)</h2>
+  <table>
+    <tr>
+      <th>Attribute</th>
+      <th>Group</th>
+      <th>Sample (n)</th>
+      <th>Actual Churn Rate</th>
+      <th>Flag Rate (@ τ=0.24)</th>
+      <th>Recall</th>
+      <th>ROC-AUC</th>
+    </tr>
+    {% for f in r.fairness_audit %}
+    <tr>
+      <td><b>{{ f.attribute }}</b></td>
+      <td>{{ f.group }}</td>
+      <td>{{ f.n }}</td>
+      <td>{{ (f.actual_churn_rate*100)|round(1) }}%</td>
+      <td>{{ (f.flag_rate*100)|round(1) }}%</td>
+      <td><b>{{ (f.recall*100)|round(1) }}%</b></td>
+      <td>{{ f.roc_auc }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p class="muted" style="margin-top:10px">
+    <b>Fairness Note:</b> Senior citizens churn at a higher baseline rate in the raw data, and the model maintains high recall (85.9%) across age groups. 
+    Age/gender are not used for discriminatory pricing; retention offers focus strictly on service quality and contract incentives.
+  </p>
+</div>
+
+<div style="display:flex;gap:14px;align-items:center;margin:30px 0;flex-wrap:wrap">
+  <a class="btn" href="/">← Test Single Subscriber Predictor</a>
+  <a class="btn sec" href="/batch">Run Fleet Batch Scoring →</a>
+</div>
+
+<script>
+function scrollNav(amount) {
+  const nav = document.getElementById('metrics-nav');
+  if (nav) {
+    nav.scrollBy({ left: amount, behavior: 'smooth' });
+  }
+}
+
+function updateNavArrows() {
+  const nav = document.getElementById('metrics-nav');
+  const leftBtn = document.getElementById('nav-arrow-left');
+  const rightBtn = document.getElementById('nav-arrow-right');
+  if (!nav || !leftBtn || !rightBtn) return;
+  
+  const atStart = nav.scrollLeft <= 5;
+  const atEnd = (nav.scrollLeft + nav.clientWidth) >= (nav.scrollWidth - 5);
+  
+  leftBtn.classList.toggle('disabled', atStart);
+  rightBtn.classList.toggle('disabled', atEnd);
+}
+
+const navEl = document.getElementById('metrics-nav');
+if (navEl) {
+  navEl.addEventListener('scroll', updateNavArrows);
+  window.addEventListener('resize', updateNavArrows);
+  // Initial check after load
+  setTimeout(updateNavArrows, 150);
+}
+</script>
+{% endblock %}

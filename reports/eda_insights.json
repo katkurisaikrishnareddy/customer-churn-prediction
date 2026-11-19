@@ -1,0 +1,58 @@
+{
+  "rows": 7043,
+  "overall_churn_rate": 0.2654,
+  "by_contract": {
+    "Month-to-month": 0.4270967741935484,
+    "One year": 0.11269517990495587,
+    "Two year": 0.02831858407079646
+  },
+  "by_internet": {
+    "DSL": 0.1895910780669145,
+    "Fiber optic": 0.4189276485788114,
+    "No": 0.07404980340760157
+  },
+  "by_payment": {
+    "Bank transfer (automatic)": 0.16709844559585493,
+    "Credit card (automatic)": 0.15243101182654403,
+    "Electronic check": 0.4528541226215645,
+    "Mailed check": 0.19106699751861042
+  },
+  "by_tenure_bucket": {
+    "0-6m": 0.5293720459149224,
+    "7-12m": 0.3588652482269504,
+    "13-24m": 0.287109375,
+    "25-48m": 0.2038895859473024,
+    "49m+": 0.09513175524787852
+  },
+  "by_techsupport": {
+    "No": 0.4163547365390153,
+    "No internet service": 0.07404980340760157,
+    "Yes": 0.15166340508806261
+  },
+  "by_addons": {
+    "0.0": 0.21406038756196485,
+    "1.0": 0.4575569358178054,
+    "2.0": 0.35818005808325265,
+    "3.0": 0.2737030411449016,
+    "4.0": 0.22300469483568075,
+    "5.0": 0.1243432574430823,
+    "6.0": 0.0528169014084507
+  },
+  "corr_with_churn": {
+    "tenure": -0.352,
+    "is_autopay": -0.21,
+    "TotalCharges": -0.198,
+    "has_family": -0.163,
+    "num_addon_services": -0.088,
+    "price_change_ratio": 0.012,
+    "SeniorCitizen": 0.151,
+    "MonthlyCharges": 0.193,
+    "internet_no_protection": 0.383,
+    "is_month_to_month": 0.405
+  },
+  "gender_churn": {
+    "Female": 0.2692,
+    "Male": 0.2616
+  },
+  "month_to_month_share": 0.55
+}

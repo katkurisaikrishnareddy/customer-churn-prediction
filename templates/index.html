@@ -1,0 +1,669 @@
+{% extends "base.html" %}{% block content %}
+{% if errors %}<div class="error"><b>Please fix the following:</b><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+
+<!-- =====================================================================
+     Telco Intelligence Hero & Fleet Benchmark Snapshot
+     ===================================================================== -->
+<section class="welcome">
+  <div class="welcome-copy">
+    <span class="eyebrow"><span class="eyebrow-dot"></span> TELCO SUBSCRIBER INTELLIGENCE PLATFORM</span>
+    <h1>Predict churn earlier.<br>Protect subscriber revenue.</h1>
+    <p>Engineered for Telecom retention teams and account managers: spot flight risks across fiber, DSL, and mobile accounts, analyze root drivers, and deploy cost-effective save offers before cancellation.</p>
+    <div class="welcome-actions">
+      <a class="btn" href="#prediction-form">Assess a subscriber <span aria-hidden="true">↓</span></a>
+      <a class="text-link" href="/about">Explore retention economics <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="welcome-stats" aria-label="Model snapshot">
+      <div><strong>7,043</strong><span>Telco profiles modeled</span></div>
+      <div><strong>26.5%</strong><span>Baseline fleet churn</span></div>
+      <div><strong>82.1%</strong><span>Churners caught @ τ = 0.24</span></div>
+      <div><strong>+$51.8k</strong><span>Net value saved / 1.4k accounts</span></div>
+    </div>
+  </div>
+  <aside class="benchmark-card" aria-label="Historical churn patterns in the Telco dataset">
+    <div class="benchmark-heading">
+      <span class="benchmark-icon" aria-hidden="true">📡</span>
+      <div><span class="eyebrow">TELCO BENCHMARK DRIVERS</span><h2>High-risk subscriber segments</h2></div>
+    </div>
+    <p class="benchmark-intro">Historical churn rates across the 7,043 Telco accounts:</p>
+    <div class="benchmark-row">
+      <div class="benchmark-label"><span>0–6 months onboarding</span><strong>52.9% churn</strong></div>
+      <div class="benchmark-track"><span style="width:100%"></span></div>
+    </div>
+    <div class="benchmark-row">
+      <div class="benchmark-label"><span>Electronic check billing</span><strong>45.3% churn</strong></div>
+      <div class="benchmark-track"><span style="width:86%"></span></div>
+    </div>
+    <div class="benchmark-row">
+      <div class="benchmark-label"><span>Month-to-month contracts</span><strong>42.7% churn</strong></div>
+      <div class="benchmark-track"><span style="width:81%"></span></div>
+    </div>
+    <div class="benchmark-row">
+      <div class="benchmark-label"><span>Fiber optic (no tech support)</span><strong>49.1% churn</strong></div>
+      <div class="benchmark-track"><span style="width:93%"></span></div>
+    </div>
+    <p class="benchmark-note">Dataset insights show proactive retention offers at our τ = 0.24 threshold save 82.1% of churners while maximizing campaign ROI.</p>
+  </aside>
+</section>
+
+<!-- =====================================================================
+     Interactive Telecom Customer Archetypes (Personas)
+     ===================================================================== -->
+<div class="archetypes-container">
+  <div class="archetypes-header">
+    <h3><span>👥</span> Real-world Telco Subscriber Archetypes (Click to test)</h3>
+    <span class="muted" style="font-size:0.75rem">Pre-configured subscriber personas from the dataset</span>
+  </div>
+  <div class="archetypes-grid">
+    <div class="archetype-card active" onclick="loadArchetype('high', this)">
+      <div class="archetype-top">
+        <span class="archetype-avatar">🚀</span>
+        <span class="archetype-badge high">High Risk ~85%</span>
+      </div>
+      <div class="archetype-name">Alex — Dissatisfied Streamer</div>
+      <div class="archetype-desc">3-month fiber user with high bill ($95.70), month-to-month, e-check, and no tech support. High flight risk!</div>
+      <div class="archetype-specs">
+        <span class="archetype-spec-pill">Fiber 1Gbps</span>
+        <span class="archetype-spec-pill">3 mo</span>
+        <span class="archetype-spec-pill">M-to-M</span>
+        <span class="archetype-spec-pill">$95.70/mo</span>
+      </div>
+    </div>
+
+    <div class="archetype-card" onclick="loadArchetype('low', this)">
+      <div class="archetype-top">
+        <span class="archetype-avatar">🛡️</span>
+        <span class="archetype-badge low">Loyal ~4%</span>
+      </div>
+      <div class="archetype-name">Sarah & Mark — Family Multi-Play</div>
+      <div class="archetype-desc">5-year customer with 2-year contract, bundled security & backup, credit card auto-pay. Highly sticky.</div>
+      <div class="archetype-specs">
+        <span class="archetype-spec-pill">DSL Bundle</span>
+        <span class="archetype-spec-pill">60 mo</span>
+        <span class="archetype-spec-pill">2-Yr Lock</span>
+        <span class="archetype-spec-pill">Auto-Pay</span>
+      </div>
+    </div>
+
+    <div class="archetype-card" onclick="loadArchetype('medium', this)">
+      <div class="archetype-top">
+        <span class="archetype-avatar">⚡</span>
+        <span class="archetype-badge medium">Medium Risk ~42%</span>
+      </div>
+      <div class="archetype-name">Elena — At-Risk Pivot</div>
+      <div class="archetype-desc">14-month fiber subscriber on month-to-month. Considering competitors; prime target for 1-year contract incentive.</div>
+      <div class="archetype-specs">
+        <span class="archetype-spec-pill">Fiber Optic</span>
+        <span class="archetype-spec-pill">14 mo</span>
+        <span class="archetype-spec-pill">M-to-M</span>
+        <span class="archetype-spec-pill">$84.50/mo</span>
+      </div>
+    </div>
+
+    <div class="archetype-card" onclick="loadArchetype('senior', this)">
+      <div class="archetype-top">
+        <span class="archetype-avatar">📞</span>
+        <span class="archetype-badge low">Stable ~12%</span>
+      </div>
+      <div class="archetype-name">Grace — Senior Voice-Only</div>
+      <div class="archetype-desc">Senior citizen with standalone landline service (no internet), paper billing, steady low-churn subscriber.</div>
+      <div class="archetype-specs">
+        <span class="archetype-spec-pill">Landline</span>
+        <span class="archetype-spec-pill">38 mo</span>
+        <span class="archetype-spec-pill">Mailed Check</span>
+        <span class="archetype-spec-pill">$20.25/mo</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     Main Subscriber Assessment & Interactive Control Center
+     ===================================================================== -->
+<div class="card" id="prediction-form">
+  <!-- Subscriber 360 Header Bar -->
+  <div class="customer-360-bar">
+    <div class="customer-identity">
+      <div class="customer-avatar-icon">👤</div>
+      <div class="customer-meta">
+        <h4 id="hud-acc-id">Subscriber Account #TEL-84920 <span class="tier Low" style="font-size:0.65rem;padding:2px 8px">Active</span></h4>
+        <p>Broadband Gateway • North Region • Last Bill Paid On Time</p>
+      </div>
+    </div>
+    <div class="customer-telemetry-pills">
+      <div class="telemetry-pill">
+        <span class="t-label">Annual Revenue</span>
+        <span class="t-val" id="hud-annual-revenue">$1,148.40/yr</span>
+      </div>
+      <div class="telemetry-pill">
+        <span class="t-label">Tenure Stage</span>
+        <span class="t-val" id="hud-tenure-stage" style="color:#f87171">0–6m Danger Zone</span>
+      </div>
+      <div class="telemetry-pill">
+        <span class="t-label">VAS Add-ons</span>
+        <span class="t-val" id="hud-vas-count">0 of 6 Active</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real-time Churn Telemetry HUD -->
+  <div class="live-hud-card">
+    <div class="hud-layout">
+      <div class="hud-gauge-mini" id="hud-gauge" style="background:conic-gradient(#ef4444 300deg, #1e293b 0)">
+        <span id="hud-prob">84.2%</span>
+      </div>
+      <div class="hud-info">
+        <div class="hud-header">
+          <h3>Live Churn Probability Radar</h3>
+          <span class="tier High" id="hud-tier-badge" style="font-size:0.75rem;padding:3px 12px">High Risk</span>
+          <span class="muted" style="font-size:0.75rem">τ = 0.24 threshold</span>
+        </div>
+        <div class="hud-driver-alert" id="hud-driver-text">
+          <span>⚠️</span> <span>Month-to-month contract & no tech support are increasing cancellation probability.</span>
+        </div>
+        <div class="hud-action-preview" id="hud-action-text">
+          💡 Recommended Action: Offer 1-year contract extension with $10 bill credit and free Tech Support trial.
+        </div>
+      </div>
+      <div class="hud-status-badge">
+        <span style="font-size:0.68rem;color:#94a3b8;text-transform:uppercase;font-weight:700">Annual Value at Risk</span>
+        <span id="hud-value-risk" style="font-size:1.15rem;font-weight:800;color:#fda4af;font-family:'JetBrains Mono',monospace">$1,148.40</span>
+        <span style="font-size:0.68rem;color:#34d399">● Real-time Model Inference</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>📋 Subscriber Configuration & Plan Details</h2>
+  
+  <form method="POST" action="/predict" id="f">
+    <!-- SECTION 1: NETWORK & BROADBAND ARCHITECTURE -->
+    <h3>🌐 Telco Connectivity & Line Services</h3>
+    <div class="field" style="margin-bottom:12px">
+      <label>Internet Service Architecture</label>
+      <div class="plan-cards-grid">
+        <div class="plan-card selected" id="card-net-fiber" onclick="setInternet('Fiber optic')">
+          <div class="plan-card-top">
+            <span class="plan-card-icon">⚡</span>
+            <span class="plan-card-risk high">High Churn Driver</span>
+          </div>
+          <span class="plan-card-title">Fiber Optic</span>
+          <span class="plan-card-sub">Ultra-fast Gigabit Broadband • Premium ARPU</span>
+        </div>
+        <div class="plan-card" id="card-net-dsl" onclick="setInternet('DSL')">
+          <div class="plan-card-top">
+            <span class="plan-card-icon">🔌</span>
+            <span class="plan-card-risk low">Stable Retention</span>
+          </div>
+          <span class="plan-card-title">DSL Broadband</span>
+          <span class="plan-card-sub">Reliable Copper Line • Moderate Speed</span>
+        </div>
+        <div class="plan-card" id="card-net-no" onclick="setInternet('No')">
+          <div class="plan-card-top">
+            <span class="plan-card-icon">🚫</span>
+            <span class="plan-card-risk low">Voice Only</span>
+          </div>
+          <span class="plan-card-title">No Internet</span>
+          <span class="plan-card-sub">Standalone Landline Voice Service</span>
+        </div>
+      </div>
+      <!-- Hidden native select for form submission -->
+      <select name="InternetService" id="InternetService" style="display:none">
+        {% for o in options.InternetService %}<option>{{ o }}</option>{% endfor %}
+      </select>
+    </div>
+
+    <div class="grid" style="margin-bottom:20px">
+      <div class="field">
+        <label>Phone Service</label>
+        <select name="PhoneService" id="PhoneService">
+          {% for o in options.PhoneService %}<option>{{ o }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Multiple Lines</label>
+        <select name="MultipleLines" id="MultipleLines">
+          {% for o in options.MultipleLines %}<option>{{ o }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- SECTION 2: VALUE-ADDED SERVICES (VAS) BUNDLE -->
+    <h3>🛡️ Value-Added Services (VAS) Bundle</h3>
+    <p class="muted" style="margin-bottom:8px">Telco analytics note: bundling Tech Support and Online Security reduces customer churn rate by over 30%.</p>
+    
+    <div class="vas-grid">
+      <!-- Online Security -->
+      <div class="vas-card" id="vas-OnlineSecurity" onclick="toggleVas('OnlineSecurity')">
+        <div class="vas-info">
+          <span class="vas-icon">🛡️</span>
+          <div class="vas-text">
+            <h5>Online Security</h5>
+            <p>Anti-threat firewall shield</p>
+          </div>
+        </div>
+        <div class="toggle-switch"></div>
+        <select name="OnlineSecurity" id="sel-OnlineSecurity" class="addon" style="display:none">
+          {% for o in options.OnlineSecurity %}<option>{{ o }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <!-- Online Backup -->
+      <div class="vas-card" id="vas-OnlineBackup" onclick="toggleVas('OnlineBackup')">
+        <div class="vas-info">
+          <span class="vas-icon">☁️</span>
+          <div class="vas-text">
+            <h5>Online Backup</h5>
+            <p>Cloud vault & document sync</p>
+          </div>
+        </div>
+        <div class="toggle-switch"></div>
+        <select name="OnlineBackup" id="sel-OnlineBackup" class="addon" style="display:none">
+          {% for o in options.OnlineBackup %}<option>{{ o }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <!-- Device Protection -->
+      <div class="vas-card" id="vas-DeviceProtection" onclick="toggleVas('DeviceProtection')">
+        <div class="vas-info">
+          <span class="vas-icon">💻</span>
+          <div class="vas-text">
+            <h5>Device Protection</h5>
+            <p>Hardware warranty & router care</p>
+          </div>
+        </div>
+        <div class="toggle-switch"></div>
+        <select name="DeviceProtection" id="sel-DeviceProtection" class="addon" style="display:none">
+          {% for o in options.DeviceProtection %}<option>{{ o }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <!-- Tech Support -->
+      <div class="vas-card" id="vas-TechSupport" onclick="toggleVas('TechSupport')">
+        <div class="vas-info">
+          <span class="vas-icon">🎧</span>
+          <div class="vas-text">
+            <h5>Tech Support</h5>
+            <p>24/7 Priority specialist access</p>
+          </div>
+        </div>
+        <div class="toggle-switch"></div>
+        <select name="TechSupport" id="sel-TechSupport" class="addon" style="display:none">
+          {% for o in options.TechSupport %}<option>{{ o }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <!-- Streaming TV -->
+      <div class="vas-card" id="vas-StreamingTV" onclick="toggleVas('StreamingTV')">
+        <div class="vas-info">
+          <span class="vas-icon">📺</span>
+          <div class="vas-text">
+            <h5>Streaming TV</h5>
+            <p>IPTV live channels package</p>
+          </div>
+        </div>
+        <div class="toggle-switch"></div>
+        <select name="StreamingTV" id="sel-StreamingTV" class="addon" style="display:none">
+          {% for o in options.StreamingTV %}<option>{{ o }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <!-- Streaming Movies -->
+      <div class="vas-card" id="vas-StreamingMovies" onclick="toggleVas('StreamingMovies')">
+        <div class="vas-info">
+          <span class="vas-icon">🎬</span>
+          <div class="vas-text">
+            <h5>Streaming Movies</h5>
+            <p>On-demand cinema library</p>
+          </div>
+        </div>
+        <div class="toggle-switch"></div>
+        <select name="StreamingMovies" id="sel-StreamingMovies" class="addon" style="display:none">
+          {% for o in options.StreamingMovies %}<option>{{ o }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- SECTION 3: CONTRACT COMMITMENT & BILLING -->
+    <h3>💳 Contract Terms & Billing Economics</h3>
+    <div class="field" style="margin-bottom:16px">
+      <label>Contract Agreement Term</label>
+      <div class="contract-pills">
+        <div class="contract-pill selected" id="pill-contract-month" onclick="setContract('Month-to-month')">
+          <strong>🗓️ Month-to-month</strong>
+          <span style="color:#f87171">Highest Churn (42.7%)</span>
+        </div>
+        <div class="contract-pill" id="pill-contract-one" onclick="setContract('One year')">
+          <strong>📜 One year</strong>
+          <span style="color:#fde68a">Moderate (11.3%)</span>
+        </div>
+        <div class="contract-pill" id="pill-contract-two" onclick="setContract('Two year')">
+          <strong>🔒 Two year</strong>
+          <span style="color:#34d399">Lowest Churn (2.8%)</span>
+        </div>
+      </div>
+      <select name="Contract" id="Contract" style="display:none">
+        {% for o in options.Contract %}<option>{{ o }}</option>{% endfor %}
+      </select>
+    </div>
+
+    <div class="grid" style="margin-bottom:16px">
+      <!-- Tenure Dual Slider + Input -->
+      <div class="field range-group">
+        <div class="range-header">
+          <label>Tenure (Months Subscribed)</label>
+          <span class="muted" id="tenure-badge" style="font-size:0.75rem;font-weight:700;color:#f87171">Early Vulnerability</span>
+        </div>
+        <div class="range-slider-wrapper">
+          <input type="range" id="tenure-range" min="0" max="72" step="1" value="{{ form.get('tenure','12') }}" oninput="syncTenure(this.value)">
+          <input type="number" name="tenure" id="tenure" min="0" max="120" step="1" required value="{{ form.get('tenure','12') }}" oninput="syncTenure(this.value)">
+        </div>
+        <div class="range-milestones">
+          <span>0m (New)</span>
+          <span>6m (Danger)</span>
+          <span>24m (Stable)</span>
+          <span>48m (Loyal)</span>
+          <span>72m (Champion)</span>
+        </div>
+      </div>
+
+      <!-- Monthly Charges Dual Slider + Input -->
+      <div class="field range-group">
+        <div class="range-header">
+          <label>Monthly Charges ($)</label>
+          <span class="muted" style="font-size:0.75rem">Telco ARPU Avg: $64.76</span>
+        </div>
+        <div class="range-slider-wrapper">
+          <input type="range" id="monthly-range" min="18" max="120" step="0.5" value="{{ form.get('MonthlyCharges','70') }}" oninput="syncMonthly(this.value)">
+          <input type="number" name="MonthlyCharges" id="MonthlyCharges" min="0" max="200" step="0.01" required value="{{ form.get('MonthlyCharges','70') }}" oninput="syncMonthly(this.value)">
+        </div>
+        <div class="range-milestones">
+          <span>$18.25 (Min)</span>
+          <span>$50.00</span>
+          <span>$64.76 (Avg)</span>
+          <span>$90.00</span>
+          <span>$120.00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-bottom:20px">
+      <div class="field">
+        <label>Total Charges ($) — Optional</label>
+        <input type="number" name="TotalCharges" id="TotalCharges" min="0" step="0.01" placeholder="Auto: tenure × monthly" value="{{ form.get('TotalCharges','') }}">
+      </div>
+      <div class="field">
+        <label>Payment Method</label>
+        <select name="PaymentMethod" id="PaymentMethod">
+          {% for o in options.PaymentMethod %}<option>{{ o }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Paperless Billing</label>
+        <select name="PaperlessBilling" id="PaperlessBilling">
+          {% for o in options.PaperlessBilling %}<option>{{ o }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- SECTION 4: HOUSEHOLD & DEMOGRAPHICS -->
+    <h3>👥 Household & Demographic Profile</h3>
+    <div class="grid" style="margin-bottom:24px">
+      <div class="field">
+        <label>Senior Citizen</label>
+        <select name="SeniorCitizen" id="SeniorCitizen">
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Partner</label>
+        <select name="Partner" id="Partner">
+          {% for o in options.Partner %}<option>{{ o }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Dependents</label>
+        <select name="Dependents" id="Dependents">
+          {% for o in options.Dependents %}<option>{{ o }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- SUBMIT BUTTON -->
+    <button class="btn" style="width:100%;padding:16px;font-size:1.05rem">
+      Generate Full Telco Churn Analysis & Retention Playbook →
+    </button>
+  </form>
+</div>
+
+<!-- =====================================================================
+     Client-side Synchronization & Live Inference Engine
+     ===================================================================== -->
+<script>
+const EX = {{ examples|tojson }};
+const VAS_KEYS = ['OnlineSecurity', 'OnlineBackup', 'DeviceProtection', 'TechSupport', 'StreamingTV', 'StreamingMovies'];
+let debounceTimer = null;
+
+function setInternet(val) {
+  document.getElementById('InternetService').value = val;
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+  if (val === 'Fiber optic') document.getElementById('card-net-fiber').classList.add('selected');
+  else if (val === 'DSL') document.getElementById('card-net-dsl').classList.add('selected');
+  else document.getElementById('card-net-no').classList.add('selected');
+  sync();
+  triggerLivePredict();
+}
+
+function setContract(val) {
+  document.getElementById('Contract').value = val;
+  document.querySelectorAll('.contract-pill').forEach(p => p.classList.remove('selected'));
+  if (val === 'Month-to-month') document.getElementById('pill-contract-month').classList.add('selected');
+  else if (val === 'One year') document.getElementById('pill-contract-one').classList.add('selected');
+  else document.getElementById('pill-contract-two').classList.add('selected');
+  triggerLivePredict();
+}
+
+function toggleVas(key) {
+  const isNoNet = document.getElementById('InternetService').value === 'No';
+  if (isNoNet) return;
+  const sel = document.getElementById('sel-' + key);
+  const card = document.getElementById('vas-' + key);
+  if (sel.value === 'Yes') {
+    sel.value = 'No';
+    card.classList.remove('active');
+  } else {
+    sel.value = 'Yes';
+    card.classList.add('active');
+  }
+  updateVasCount();
+  triggerLivePredict();
+}
+
+function updateVasCount() {
+  let count = 0;
+  VAS_KEYS.forEach(k => {
+    const sel = document.getElementById('sel-' + k);
+    if (sel && sel.value === 'Yes') count++;
+  });
+  document.getElementById('hud-vas-count').textContent = count + ' of 6 Active';
+}
+
+function syncTenure(val) {
+  val = Math.max(0, parseInt(val) || 0);
+  document.getElementById('tenure').value = val;
+  document.getElementById('tenure-range').value = Math.min(val, 72);
+  
+  const stageEl = document.getElementById('hud-tenure-stage');
+  const badgeEl = document.getElementById('tenure-badge');
+  if (val <= 6) {
+    stageEl.textContent = '0–6m Danger Zone';
+    stageEl.style.color = '#f87171';
+    badgeEl.textContent = 'Early Vulnerability';
+    badgeEl.style.color = '#f87171';
+  } else if (val <= 24) {
+    stageEl.textContent = '7–24m Stabilizing';
+    stageEl.style.color = '#fde68a';
+    badgeEl.textContent = 'Ramp-up Stage';
+    badgeEl.style.color = '#fde68a';
+  } else if (val <= 48) {
+    stageEl.textContent = '25–48m Established';
+    stageEl.style.color = '#a7f3d0';
+    badgeEl.textContent = 'Established Customer';
+    badgeEl.style.color = '#a7f3d0';
+  } else {
+    stageEl.textContent = '49m+ Champion';
+    stageEl.style.color = '#34d399';
+    badgeEl.textContent = 'Loyal Champion';
+    badgeEl.style.color = '#34d399';
+  }
+  updateRevenue();
+  triggerLivePredict();
+}
+
+function syncMonthly(val) {
+  val = parseFloat(val) || 0;
+  document.getElementById('MonthlyCharges').value = val;
+  document.getElementById('monthly-range').value = Math.min(Math.max(val, 18), 120);
+  updateRevenue();
+  triggerLivePredict();
+}
+
+function updateRevenue() {
+  const m = parseFloat(document.getElementById('MonthlyCharges').value) || 0;
+  const annual = (m * 12).toFixed(2);
+  document.getElementById('hud-annual-revenue').textContent = '$' + annual + '/yr';
+  document.getElementById('hud-value-risk').textContent = '$' + annual;
+}
+
+function sync() {
+  const net = document.getElementById('InternetService').value === 'No';
+  VAS_KEYS.forEach(k => {
+    const sel = document.getElementById('sel-' + k);
+    const card = document.getElementById('vas-' + k);
+    if (net) {
+      sel.value = 'No internet service';
+      card.classList.add('disabled');
+      card.classList.remove('active');
+    } else {
+      card.classList.remove('disabled');
+      if (sel.value === 'No internet service') sel.value = 'No';
+      if (sel.value === 'Yes') card.classList.add('active');
+      else card.classList.remove('active');
+    }
+  });
+
+  const ph = document.getElementById('PhoneService').value === 'No';
+  const m = document.getElementById('MultipleLines');
+  if (ph) {
+    m.value = 'No phone service';
+    m.disabled = true;
+  } else {
+    m.disabled = false;
+    if (m.value === 'No phone service') m.value = 'No';
+  }
+  updateVasCount();
+}
+
+function loadArchetype(key, cardEl) {
+  document.querySelectorAll('.archetype-card').forEach(c => c.classList.remove('active'));
+  if (cardEl) cardEl.classList.add('active');
+  const e = EX[key];
+  if (!e) return;
+
+  for (const n in e) {
+    const el = document.querySelector('[name="' + n + '"]');
+    if (el) el.value = e[n];
+  }
+  // Sync visual controls
+  setInternet(e.InternetService || 'Fiber optic');
+  setContract(e.Contract || 'Month-to-month');
+  syncTenure(e.tenure !== undefined ? e.tenure : 12);
+  syncMonthly(e.MonthlyCharges !== undefined ? e.MonthlyCharges : 70);
+
+  VAS_KEYS.forEach(k => {
+    const sel = document.getElementById('sel-' + k);
+    const card = document.getElementById('vas-' + k);
+    if (e[k] === 'Yes') {
+      sel.value = 'Yes';
+      card.classList.add('active');
+    } else {
+      card.classList.remove('active');
+    }
+  });
+
+  const accMap = { 'high': '#TEL-84920', 'low': '#TEL-19402', 'medium': '#TEL-63914', 'senior': '#TEL-40291' };
+  document.getElementById('hud-acc-id').innerHTML = 'Subscriber Account ' + (accMap[key] || '#TEL-84920') + ' <span class="tier Low" style="font-size:0.65rem;padding:2px 8px">Active</span>';
+
+  sync();
+  triggerLivePredict();
+}
+
+function buildRecord() {
+  const form = document.getElementById('f');
+  const fd = new FormData(form);
+  const data = {};
+  fd.forEach((val, key) => data[key] = val);
+  return data;
+}
+
+function triggerLivePredict() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    const record = buildRecord();
+    fetch('/api/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(record)
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) return;
+      const prob = data.churn_probability;
+      const tier = data.risk_level.split(' ')[0]; // 'High', 'Medium', 'Low'
+      
+      const probEl = document.getElementById('hud-prob');
+      probEl.textContent = prob.toFixed(1) + '%';
+      
+      const col = tier === 'High' ? '#ef4444' : (tier === 'Medium' ? '#f59e0b' : '#10b981');
+      document.getElementById('hud-gauge').style.background = `conic-gradient(${col} ${prob * 3.6}deg, #1e293b 0)`;
+      
+      const badge = document.getElementById('hud-tier-badge');
+      badge.className = 'tier ' + tier;
+      badge.textContent = data.risk_level;
+      
+      const alertEl = document.getElementById('hud-driver-text');
+      if (data.drivers_up && data.drivers_up.length > 0) {
+        const topDriver = data.drivers_up[0];
+        alertEl.innerHTML = `<span>⚠️</span> <span><b>${topDriver.factor}</b> (${topDriver.value}) raises churn risk by <b>+${topDriver.impact_pp} pp</b>.</span>`;
+      } else {
+        alertEl.innerHTML = `<span>🛡️</span> <span>No critical risk drivers detected. Account profile is stable.</span>`;
+      }
+
+      const actionEl = document.getElementById('hud-action-text');
+      if (data.actions && data.actions.length > 0) {
+        actionEl.innerHTML = `💡 Retention Playbook: ${data.actions[0]}`;
+      } else {
+        actionEl.innerHTML = `💡 Standard Customer Care Journey — No immediate discount needed.`;
+      }
+    })
+    .catch(() => {});
+  }, 220);
+}
+
+// Initial binding
+document.getElementById('PhoneService').onchange = () => { sync(); triggerLivePredict(); };
+document.getElementById('PaymentMethod').onchange = triggerLivePredict;
+document.getElementById('PaperlessBilling').onchange = triggerLivePredict;
+document.getElementById('SeniorCitizen').onchange = triggerLivePredict;
+document.getElementById('Partner').onchange = triggerLivePredict;
+document.getElementById('Dependents').onchange = triggerLivePredict;
+
+document.getElementById('f').addEventListener('submit', () => {
+  document.querySelectorAll('select:disabled').forEach(s => s.disabled = false);
+});
+
+// Run sync and initial prediction on page load
+sync();
+triggerLivePredict();
+</script>
+{% endblock %}

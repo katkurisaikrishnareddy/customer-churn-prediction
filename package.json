@@ -1,0 +1,22 @@
+{
+  "name": "customer-churn-prediction",
+  "version": "2.0.0",
+  "description": "End-to-End Customer Churn Prediction Machine Learning System",
+  "main": "app.py",
+  "scripts": {
+    "dev": "python app.py",
+    "start": "python app.py",
+    "serve": "python app.py",
+    "test": "python -m pytest",
+    "pipeline": "python run_pipeline.py --fast"
+  },
+  "keywords": [
+    "customer-churn",
+    "machine-learning",
+    "flask",
+    "scikit-learn",
+    "capstone"
+  ],
+  "author": "",
+  "license": "MIT"
+}

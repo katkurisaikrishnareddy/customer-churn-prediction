@@ -1,0 +1,54 @@
+{
+  "segments": {
+    "k": 4,
+    "silhouette_by_k": {
+      "3": 0.3939554738195875,
+      "4": 0.4007189851830191,
+      "5": 0.35830011343277857
+    },
+    "profile": [
+      {
+        "segment": "S1",
+        "customers": 2373,
+        "churn_rate": 0.474,
+        "avg_tenure": 15.053,
+        "avg_monthly": 77.579,
+        "avg_addons": 1.832,
+        "pct_month_to_month": 0.874
+      },
+      {
+        "segment": "S2",
+        "customers": 1521,
+        "churn_rate": 0.242,
+        "avg_tenure": 10.16,
+        "avg_monthly": 29.58,
+        "avg_addons": 0.298,
+        "pct_month_to_month": 0.725
+      },
+      {
+        "segment": "S3",
+        "customers": 2158,
+        "churn_rate": 0.154,
+        "avg_tenure": 56.89,
+        "avg_monthly": 90.594,
+        "avg_addons": 4.16,
+        "pct_month_to_month": 0.245
+      },
+      {
+        "segment": "S4",
+        "customers": 991,
+        "churn_rate": 0.044,
+        "avg_tenure": 54.539,
+        "avg_monthly": 31.812,
+        "avg_addons": 0.581,
+        "pct_month_to_month": 0.173
+      }
+    ]
+  },
+  "risk_tier_counts_test": {
+    "Low": 795,
+    "Medium": 321,
+    "High": 293
+  },
+  "monthly_revenue_flagged": 46056.05
+}

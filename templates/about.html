@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Methodology{% endblock %}{% block content %}
+<div class="card"><h2>🧭 How this system works</h2><ol class="clean">
+<li><b>Data</b> — IBM Telco Customer Churn (7,043 customers, 21 columns, 26.5% churn). Automated quality gate before training.</li>
+<li><b>Split first</b> — stratified 80/20 train/test; scaling and encoding live inside the Pipeline, so nothing leaks from the test set.</li>
+<li><b>Features</b> — cleaned TotalCharges (new customers = $0), plus business features (add-on count, auto-pay, month-to-month, tenure bucket, price-change ratio). Gender is excluded.</li>
+<li><b>Models</b> — Logistic Regression, Random Forest, HistGradientBoosting, XGBoost tuned with 5-fold stratified CV on PR-AUC; the simplest model within one standard error of the best is chosen.</li>
+<li><b>Imbalance</b> — class weights and SMOTE were tested: they improve recall but not ranking quality, so we keep probabilities clean and move the threshold instead.</li>
+<li><b>Threshold</b> — chosen from retention economics (offer cost vs. revenue saved), using out-of-fold predictions only.</li>
+<li><b>Explainability</b> — SHAP for the global view; a what-if factor analysis for each individual prediction.</li>
+<li><b>Deployment</b> — Flask + gunicorn + Docker; JSON API, CSV batch scoring, health check, automated tests, CI.</li></ol></div>
+<div class="card"><h2>⚠️ Limitations</h2><ul class="clean"><li>One public dataset from one point in time — retrain on current company data before real use.</li><li>Business numbers are illustrative assumptions (edit <code>config.yaml</code>).</li><li>Predictions show association, not causation; suggested actions are a playbook, not proof an offer will work.</li><li>The model flags seniors more often — human review required.</li></ul></div>
+{% endblock %}

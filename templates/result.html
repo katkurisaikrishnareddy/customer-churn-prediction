@@ -1,0 +1,159 @@
+{% extends "base.html" %}{% block title %}Telco Churn Assessment & Retention Playbook{% endblock %}{% block content %}
+{% set col = '#ef4444' if r.tier=='High' else ('#f59e0b' if r.tier=='Medium' else '#10b981') %}
+{% set annual_rev = (r.input.MonthlyCharges * 12)|round(2) %}
+
+<!-- Subscriber Profile Overview Card -->
+<div class="customer-360-bar">
+  <div class="customer-identity">
+    <div class="customer-avatar-icon">📡</div>
+    <div class="customer-meta">
+      <h4>Subscriber Evaluation Report <span class="tier {{ r.tier }}" style="font-size:0.7rem;padding:2px 10px">{{ r.risk_level }}</span></h4>
+      <p>Contract: {{ r.input.Contract }} · Internet: {{ r.input.InternetService }} · Tenure: {{ r.input.tenure|int }} months</p>
+    </div>
+  </div>
+  <div class="customer-telemetry-pills">
+    <div class="telemetry-pill">
+      <span class="t-label">Monthly Rate</span>
+      <span class="t-val">${{ r.input.MonthlyCharges }}/mo</span>
+    </div>
+    <div class="telemetry-pill">
+      <span class="t-label">Annual Value</span>
+      <span class="t-val">${{ annual_rev }}/yr</span>
+    </div>
+    <div class="telemetry-pill">
+      <span class="t-label">Payment Type</span>
+      <span class="t-val" style="font-size:0.8rem">{{ r.input.PaymentMethod }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- Primary Risk Assessment Card -->
+<div class="card" style="text-align:center">
+  <h2>🎯 Churn Risk Assessment & Retention Status</h2>
+  <div class="gauge" style="background:conic-gradient({{ col }} {{ r.churn_probability*3.6 }}deg,#0f172a 0)">
+    <span>{{ r.churn_probability }}%</span>
+  </div>
+  <p style="margin-top:14px"><span class="tier {{ r.tier }}">{{ r.risk_level }}</span></p>
+  <p style="margin-top:10px;font-size:1.15rem"><b>{{ r.label }}</b></p>
+  <p class="muted" style="max-width:680px;margin:8px auto 0">
+    Calibrated churn probability. In our Telco retention economics model, save campaigns are activated from 
+    <b>{{ (threshold*100)|round(0)|int }}%</b> (the cost-optimal decision threshold that captures 82.1% of churners), with high-urgency intervention from <b>50%</b>.
+  </p>
+</div>
+
+<!-- Retention Economics & Value Protection -->
+<div class="retention-economics-card">
+  <h3 style="color:#f8fafc;margin-top:0">💰 Telco Retention Economics & Campaign ROI</h3>
+  <p class="muted">Based on our project's business cost model ($50 average retention incentive vs. 12-month preserved customer revenue):</p>
+  <div class="economics-grid">
+    <div class="telemetry-pill">
+      <span class="t-label">Annual Revenue at Risk</span>
+      <span class="t-val" style="color:#fda4af">${{ annual_rev }}</span>
+    </div>
+    <div class="telemetry-pill">
+      <span class="t-label">Target Save Budget</span>
+      <span class="t-val" style="color:#fde68a">$50.00 max</span>
+    </div>
+    <div class="telemetry-pill">
+      <span class="t-label">Net Protected Revenue</span>
+      <span class="t-val" style="color:#34d399">${{ (annual_rev - 50)|round(2) }}</span>
+    </div>
+    <div class="telemetry-pill">
+      <span class="t-label">Policy Status</span>
+      <span class="t-val" style="color:{% if r.prediction == 1 %}#f87171{% else %}#34d399{% endif %}">
+        {% if r.prediction == 1 %}Flagged for Save Offer{% else %}Standard Customer Care{% endif %}
+      </span>
+    </div>
+  </div>
+</div>
+
+{% for n in r.notes %}<div class="note">ℹ️ {{ n }}</div>{% endfor %}
+
+<!-- Risk Drivers & Protective Factors -->
+<div class="two">
+  <div class="card">
+    <h2>⬆️ What raises this subscriber's risk</h2>
+    {% if r.drivers_up %}
+    <div class="bars up">
+      {% for d in r.drivers_up %}
+      <div class="b">
+        <div class="n">{{ d.factor }}<small>{{ d.value }}</small></div>
+        <div class="t"><div class="f" style="width:{{ [d.impact_pp*3,100]|min }}%"></div></div>
+        <div class="v">+{{ d.impact_pp }} pp</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">No single factor stands out as significantly increasing risk.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>⬇️ What protects this subscriber</h2>
+    {% if r.drivers_down %}
+    <div class="bars down">
+      {% for d in r.drivers_down %}
+      <div class="b">
+        <div class="n">{{ d.factor }}<small>{{ d.value }}</small></div>
+        <div class="t"><div class="f" style="width:{{ [(-d.impact_pp)*3,100]|min }}%"></div></div>
+        <div class="v">{{ d.impact_pp }} pp</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">No strong protective factors detected.</p>
+    {% endif %}
+  </div>
+</div>
+
+<p class="muted" style="margin:-8px 0 18px">
+  pp = percentage points of churn probability versus a typical subscriber's baseline. Factors overlap (e.g. premium fiber service explains higher monthly bills), so review the full picture rather than isolated variables.
+</p>
+
+<!-- Retention Playbook & CRM Rep Action Tool -->
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-bottom:1px solid var(--border-subtle);padding-bottom:12px;margin-bottom:14px">
+    <h2 style="border:none;padding:0;margin:0">💡 Recommended Retention Action Playbook</h2>
+    <button class="btn sec" onclick="copyCrmNote()" style="position:relative">
+      📋 Copy CRM Retention Note
+      <span class="copy-toast" id="copy-toast">Copied!</span>
+    </button>
+  </div>
+
+  <ul class="clean">
+    {% for a in r.actions %}
+    <li><b>Recommended Offer:</b> {{ a }}</li>
+    {% endfor %}
+  </ul>
+
+  <div class="crm-script-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase">CRM Call Note Template (Click button above to copy)</span>
+      <span style="font-size:0.72rem;color:#6366f1">Telco Retention Desk</span>
+    </div>
+    <div class="crm-script-text" id="crm-text">CUSTOMER CHURN ASSESSMENT REPORT
+Account Status: Active | Churn Risk: {{ r.churn_probability }}% ({{ r.risk_level }})
+Contract Term: {{ r.input.Contract }} | Tenure: {{ r.input.tenure|int }} months | Monthly Rate: ${{ r.input.MonthlyCharges }}/mo
+Annual At-Risk Revenue: ${{ annual_rev }}
+Primary Risk Factors: {% if r.drivers_up %}{% for d in r.drivers_up %}{{ d.factor }} (+{{ d.impact_pp }}pp){% if not loop.last %}, {% endif %}{% endfor %}{% else %}None{% endif %}
+Recommended Agent Action: {% if r.actions %}{{ r.actions[0] }}{% else %}Standard check-in{% endif %}
+Retention Budget Authorized: Up to $50.00 promotional discount / service upgrade credit.</div>
+  </div>
+</div>
+
+<div style="display:flex;gap:14px;align-items:center;margin-top:20px;flex-wrap:wrap">
+  <a class="btn" href="/">← Score another subscriber</a>
+  <a class="btn sec" href="/metrics">View model validation & economics →</a>
+</div>
+
+<script>
+function copyCrmNote() {
+  const text = document.getElementById('crm-text').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('copy-toast');
+    toast.style.display = 'inline-block';
+    setTimeout(() => toast.style.display = 'none', 2000);
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+{
+  "tenure": 0.4324,
+  "is_month_to_month": 0.3816,
+  "avg_monthly_billed": 0.1913,
+  "internet_no_protection": 0.1555,
+  "MonthlyCharges": 0.1473,
+  "tenure_bucket_0-6m": 0.1469,
+  "InternetService_Fiber optic": 0.1406,
+  "Contract_Two year": 0.1254,
+  "InternetService_DSL": 0.1075,
+  "MultipleLines_No": 0.1006,
+  "is_autopay": 0.0956,
+  "has_streaming": 0.0947,
+  "Contract_Month-to-month": 0.094,
+  "num_protection_services": 0.0938,
+  "TotalCharges": 0.0936
+}

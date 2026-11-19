@@ -1,0 +1,18 @@
+# Pyrefly Language Server & Static Type Checker Configuration
+# This ensures Pyrefly correctly resolves all dependencies (Flask, joblib, numpy, pandas, etc.)
+# and workspace source modules without falling back to directory heuristics.
+
+python-interpreter-path = "C:/Users/katku/AppData/Local/Programs/Python/Python311/python.exe"
+
+search-path = [
+    ".",
+    "src",
+    "C:/Users/katku/AppData/Local/Programs/Python/Python311/Lib/site-packages",
+]
+
+project-includes = [
+    "src/**",
+    "tests/**",
+    "app.py",
+    "run_pipeline.py",
+]

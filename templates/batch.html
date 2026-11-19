@@ -1,0 +1,72 @@
+{% extends "base.html" %}{% block title %}Fleet Batch Scoring & Risk Segmentation{% endblock %}{% block content %}
+{% if error %}<div class="error">⚠️ {{ error }}</div>{% endif %}
+
+<div class="card">
+  <h2>📦 Fleet Batch Scoring & Subscriber Segmentation</h2>
+  <p class="muted">
+    Upload a bulk customer CSV (matching the IBM Telco format) to score hundreds or thousands of accounts simultaneously. 
+    The inference engine outputs calibrated churn probabilities, assigns risk tiers, and flags accounts qualifying for retention intervention at τ = 0.24. Max 2 MB.
+  </p>
+  
+  <form method="POST" enctype="multipart/form-data" class="row" style="margin-top:20px;gap:14px">
+    <input type="file" name="file" accept=".csv" required style="padding:10px;background:var(--bg-input)">
+    <button class="btn">Score Fleet Accounts →</button>
+    <a class="btn sec" href="/sample.csv">⬇ Download Sample Telco CSV (60 Accounts)</a>
+  </form>
+</div>
+
+{% if summary %}
+<div class="card">
+  <h2>📊 Fleet Scoring Summary & Retention Pipeline</h2>
+  <div class="kpis">
+    <div class="kpi"><div class="v">{{ summary.scored }}</div><div class="l">Total Scored</div></div>
+    <div class="kpi"><div class="v" style="color:#f87171">{{ summary.flagged }}</div><div class="l">Flagged for Retention</div></div>
+    <div class="kpi"><div class="v" style="color:#ef4444">{{ summary.high }}</div><div class="l">High Risk (>50%)</div></div>
+    <div class="kpi"><div class="v" style="color:#f59e0b">{{ summary.medium }}</div><div class="l">Medium Risk (24-50%)</div></div>
+    <div class="kpi"><div class="v" style="color:#10b981">{{ summary.low }}</div><div class="l">Low Risk (<24%)</div></div>
+    <div class="kpi"><div class="v">{{ summary.avg_prob }}%</div><div class="l">Fleet Avg Risk</div></div>
+  </div>
+
+  {% if summary.invalid %}
+  <div class="error">
+    <b>{{ summary.invalid }} row(s) skipped due to validation errors:</b>
+    <ul>
+      {% for b in bad %}
+      <li>Row {{ b.row }}: {{ b.errors|join('; ') }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div style="margin:20px 0 10px">
+    <a class="btn" download="churn_scores.csv" href="data:text/csv;base64,{{ csv_b64 }}">⬇ Export Scored CSV with Retention Tiers</a>
+  </div>
+
+  <h3 style="margin-top:26px">🚨 Top 25 Highest-Risk Subscribers (Priority Intervention List)</h3>
+  <table>
+    <tr>
+      {% for c in cols %}
+      <th>{{ c }}</th>
+      {% endfor %}
+    </tr>
+    {% for r in top %}
+    <tr>
+      {% for c in cols %}
+      <td>
+        {% if c=='risk_tier' %}
+        <span class="tier {{ r[c] }}" style="font-size:0.75rem;padding:2px 10px">{{ r[c] }}</span>
+        {% elif c=='churn_probability' %}
+        <b style="font-family:'JetBrains Mono',monospace">{{ (r[c]*100)|round(1) }}%</b>
+        {% elif c=='MonthlyCharges' %}
+        ${{ r[c] }}
+        {% else %}
+        {{ r[c] }}
+        {% endif %}
+      </td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,51 @@
+{
+  "rows": 7043,
+  "columns": 20,
+  "checks": [
+    {
+      "check": "required columns",
+      "passed": false,
+      "detail": "missing=['tenure']"
+    },
+    {
+      "check": "null percentage",
+      "passed": true,
+      "detail": "threshold=5.0%"
+    },
+    {
+      "check": "hidden blank values",
+      "passed": false,
+      "detail": "{'TotalCharges': 11}"
+    },
+    {
+      "check": "target column",
+      "passed": true,
+      "detail": "distribution={'No': 0.7346, 'Yes': 0.2654}"
+    },
+    {
+      "check": "category values",
+      "passed": true,
+      "detail": "all within expected sets"
+    },
+    {
+      "check": "numeric ranges",
+      "passed": true,
+      "detail": "ok"
+    },
+    {
+      "check": "duplicates",
+      "passed": true,
+      "detail": "rows=0 ids=0"
+    }
+  ],
+  "errors": [
+    "Missing required columns: ['tenure']"
+  ],
+  "warnings": [
+    "Blank-string values found (treated as missing): {'TotalCharges': 11}"
+  ],
+  "hidden_blanks": {
+    "TotalCharges": 11
+  },
+  "passed": false
+}

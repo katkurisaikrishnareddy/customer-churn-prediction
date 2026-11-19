@@ -1,0 +1,102 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Customer Churn Prediction — central configuration
+# Every tunable number in the project lives here (no magic numbers in code).
+# ─────────────────────────────────────────────────────────────────────────────
+project:
+  name: "Customer Churn Prediction"
+  version: "2.0.0"
+
+data:
+  url: "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv"
+  raw_path: "data/Telco-Customer-Churn.csv"      # shipped with the repo -> no internet needed
+  processed_dir: "data/processed"
+  expected_rows: 7043
+
+target_column: "Churn"
+id_column: "customerID"
+
+features:
+  add_engineered: true
+  drop_columns: ["gender"]     # protected attribute, zero predictive signal (see ablation study)
+
+validation:
+  required_columns: [customerID, gender, SeniorCitizen, Partner, Dependents, tenure,
+                     PhoneService, MultipleLines, InternetService, OnlineSecurity,
+                     OnlineBackup, DeviceProtection, TechSupport, StreamingTV,
+                     StreamingMovies, Contract, PaperlessBilling, PaymentMethod,
+                     MonthlyCharges, TotalCharges, Churn]
+  max_null_percent: 5.0
+  numeric_ranges:
+    tenure: [0, 120]
+    MonthlyCharges: [0, 200]
+    SeniorCitizen: [0, 1]
+  allowed_values:
+    gender: [Female, Male]
+    Partner: ["Yes", "No"]
+    Dependents: ["Yes", "No"]
+    PhoneService: ["Yes", "No"]
+    MultipleLines: ["Yes", "No", "No phone service"]
+    InternetService: [DSL, "Fiber optic", "No"]
+    OnlineSecurity: ["Yes", "No", "No internet service"]
+    OnlineBackup: ["Yes", "No", "No internet service"]
+    DeviceProtection: ["Yes", "No", "No internet service"]
+    TechSupport: ["Yes", "No", "No internet service"]
+    StreamingTV: ["Yes", "No", "No internet service"]
+    StreamingMovies: ["Yes", "No", "No internet service"]
+    Contract: [Month-to-month, One year, Two year]
+    PaperlessBilling: ["Yes", "No"]
+    PaymentMethod: [Electronic check, Mailed check, "Bank transfer (automatic)", "Credit card (automatic)"]
+    Churn: ["Yes", "No"]
+
+model:
+  artifacts_dir: "artifacts"
+  model_path: "artifacts/churn_model.joblib"
+  metadata_path: "artifacts/model_metadata.json"
+  report_path: "artifacts/evaluation_report.json"
+  test_size: 0.2
+  random_state: 42
+  cv_folds: 5
+  selection_metric: "average_precision"   # PR-AUC: honest metric when classes are imbalanced (27% churn)
+  selection_rule: "one_se"                # "best" = highest mean score | "one_se" = simplest model within 1 std-error of best
+  calibrate: "auto"                       # auto = keep calibration only if it lowers the Brier score
+  complexity_rank: {LogisticRegression: 1, HistGradientBoosting: 2, RandomForest: 3, XGBoost: 4}
+  candidates:
+    LogisticRegression:
+      params:      {C: [0.01, 0.03, 0.1, 0.3, 1.0, 3.0]}
+      params_fast: {C: [0.1, 1.0]}
+    RandomForest:
+      params:      {n_estimators: [300], max_depth: [6, 10, null], min_samples_leaf: [1, 5, 10]}
+      params_fast: {n_estimators: [150], max_depth: [8], min_samples_leaf: [5]}
+    HistGradientBoosting:
+      params:      {learning_rate: [0.03, 0.06, 0.1], max_depth: [3, 5], max_iter: [100, 200], l2_regularization: [0.0, 1.0]}
+      params_fast: {learning_rate: [0.06], max_depth: [3], max_iter: [100]}
+    XGBoost:
+      params:      {n_estimators: [200, 400], max_depth: [3, 4], learning_rate: [0.03, 0.06], min_child_weight: [1, 5]}
+      params_fast: {n_estimators: [150], max_depth: [3], learning_rate: [0.06]}
+  bootstrap_samples: 1000
+
+# Business assumptions — REPLACE with real company numbers. Charges in the dataset are USD.
+business:
+  retention_offer_cost: 50.0       # $ cost per customer we contact (discount + agent time)
+  offer_success_rate: 0.30         # share of would-be churners who stay after the offer
+  value_horizon_months: 12         # months of revenue we keep when a churner is saved
+  high_risk_probability: 0.50      # >= this calibrated probability -> "High Risk"
+  sensitivity:
+    offer_cost: [10, 25, 50, 100]
+    success_rate: [0.10, 0.20, 0.30, 0.50]
+
+segmentation:
+  k_range: [3, 4, 5]
+  features: [tenure, MonthlyCharges, num_addon_services]
+
+explainability:
+  shap_sample_size: 500
+  reference_rows_for_app: 60       # rows used by the app's per-customer driver analysis
+
+reports:
+  figures_dir: "reports/figures"
+  reports_dir: "reports"
+
+logging:
+  log_file: "logs/pipeline.log"
+  level: "INFO"

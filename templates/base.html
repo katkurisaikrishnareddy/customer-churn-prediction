@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Customer Churn AI Predictor{% endblock %} — Capstone ML System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=2.3">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <a href="/" class="brand-link">
+          <div class="brand-logo-icon" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#38bdf8"/>
+                  <stop offset="50%" stop-color="#6366f1"/>
+                  <stop offset="100%" stop-color="#a855f7"/>
+                </linearGradient>
+                <radialGradient id="beaconGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.9"/>
+                  <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <rect x="1.5" y="1.5" width="33" height="33" rx="9" fill="#0c1322" stroke="url(#brandGrad)" stroke-width="1.5"/>
+              <circle cx="18" cy="18" r="11" stroke="url(#brandGrad)" stroke-width="1" stroke-dasharray="3 2" opacity="0.45"/>
+              <circle cx="18" cy="18" r="7.5" fill="url(#beaconGlow)" opacity="0.35"/>
+              <path d="M10.5 12C14.8 8 21.2 8 25.5 12" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M13 14.8C16 12 20 12 23 14.8" stroke="#818cf8" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M15.5 17.5C17 16.2 19 16.2 20.5 17.5" stroke="#c084fc" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M18 19V27M14 27H22M15.5 24H20.5" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="18" cy="19" r="2.2" fill="#ffffff"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <span class="brand-title">ChurnLens AI</span>
+            <span class="brand-subtitle">Telco Retention Economics</span>
+          </div>
+        </a>
+        <div class="model-badge">
+          <span class="badge-dot"></span>
+          <span class="badge-text">v2.0 Model • Recall: 82.1% @ τ=0.24</span>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="/" id="nav-predict" class="nav-item">Single Predictor</a>
+        <a href="/batch" id="nav-batch" class="nav-item">Batch Scoring</a>
+        <a href="/metrics" id="nav-metrics" class="nav-item">Model Metrics</a>
+        <a href="/about" id="nav-about" class="nav-item">Methodology</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-inner">
+      <p>Customer Churn Prediction & Retention Economics — Capstone ML Project</p>
+      <p class="footer-sub">Calibrated Probability Engine · Stratified 5-Fold Validation · Decision Threshold τ = 0.24</p>
+    </div>
+  </footer>
+
+  <script>
+    // Highlight current page in navbar
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.nav-links a').forEach(a => {
+      const href = a.getAttribute('href');
+      if ((href === '/' && currentPath === '/') || (href !== '/' && currentPath.startsWith(href))) {
+        a.classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>
